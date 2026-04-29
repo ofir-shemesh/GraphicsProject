@@ -37,6 +37,8 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 
 public class Window {
+	//Test Edit
+	
 	private static final int WIDTH = 800;
 	private static final int HEIGHT = 800;
 	private static final String TITLE = "Graphics Project";
@@ -76,6 +78,7 @@ public class Window {
 	public static boolean shouldClose() {
 		return glfwWindowShouldClose(window);
 	}
+	
 	
 	public static void loop_before() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
