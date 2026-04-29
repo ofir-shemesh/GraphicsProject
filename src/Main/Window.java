@@ -37,8 +37,6 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 
 public class Window {
-	//Test Edit
-	
 	private static final int WIDTH = 800;
 	private static final int HEIGHT = 800;
 	private static final String TITLE = "Graphics Project";
