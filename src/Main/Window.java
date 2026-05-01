@@ -1,4 +1,4 @@
-package Main;
+package main;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR;
@@ -36,9 +36,11 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 
+import color.Color;
+
 public class Window {
-	private static final int WIDTH = 800;
-	private static final int HEIGHT = 800;
+	public static final int WIDTH = 800;
+	public static final int HEIGHT = 800;
 	private static final String TITLE = "Graphics Project";
 	private static final Color backgroundColor = new Color(0.1f, 0.15f, 0.3f, 1.0f);
     private static long window;
@@ -76,7 +78,10 @@ public class Window {
 	public static boolean shouldClose() {
 		return glfwWindowShouldClose(window);
 	}
-	
+
+	public static long getWindow() {
+		return window;
+	}
 	
 	public static void loop_before() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
