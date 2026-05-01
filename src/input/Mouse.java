@@ -18,7 +18,7 @@ import utils.Utils;
 public class Mouse {
 	private static List<FloatQuadRunnable> movementActions = new ArrayList<>();
 	private static float[] x, y;
-	private static boolean on = false;
+	private static boolean on;
 	
 	private static int cursor_width = 32, cursor_height = 32;
 	private static GLFWImage cursor_image;
@@ -27,18 +27,25 @@ public class Mouse {
 		return on;
 	}
 	
-	public static void flip() {
-		on = !on;
-		System.out.println("on=" + on);
+	private static void postOnEdit() {
+
 		GLFW.glfwSetInputMode(Window.getWindow(), GLFW.GLFW_CURSOR,
 				on ? GLFW.GLFW_CURSOR_NORMAL : GLFW.GLFW_CURSOR_DISABLED);
 		
 		if (on)
 	    	GLFW.glfwSetCursor(Window.getWindow(), cursor);
-
+		
+	}
+	
+	public static void flip() {
+		on = !on;
+		postOnEdit();
 	}
 		
     public static void init() {
+    	on = false;
+    	postOnEdit();
+    	
     	Vector2f cursorPosition = getCursorPosition();
     	
     	x = new float[] {cursorPosition.x};
