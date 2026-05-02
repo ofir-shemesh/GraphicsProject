@@ -1,4 +1,4 @@
-package camera;
+	package camera;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -138,7 +138,7 @@ public class Camera {
 	
 	//Transformations
 	
-	private Matrix4f getTranslationTransformation() {
+	public Matrix4f getTranslationTransformation() {
 		return new Matrix4f().translation(new Vector3f(position).negate());
 	}
 	

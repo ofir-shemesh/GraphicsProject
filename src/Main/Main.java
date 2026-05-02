@@ -16,6 +16,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_S;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
 
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import camera.Camera;
@@ -32,6 +33,8 @@ public class Main {
 	
 	private static Renderable sky_rend;
 	private static Sky sky;
+	
+	private static Renderable floor_rend;
 	
 	// Player & Camera
 	
@@ -181,6 +184,23 @@ public class Main {
 		Time.addPostTick(updateSkyUniforms);
 	}
 	
+	//Floor
+	
+	private static void initFloorRenderable() {
+		RawModel model = RawModelFactory.quadFloor(new Vector3f(0.0f, -0.5f, 0.0f), new Vector2f(20.0f, 20.0f));
+		ShaderProgram program = new ShaderProgram("res/shaders/floor/vert.vert", "res/shaders/floor/frag.frag");
+		
+		floor_rend = new Renderable(model, program, new Texture[] {});
+		
+		Runnable setCameraUniforms = () -> {
+			floor_rend.getShaderProgram().editUniform("camTrans", camera.getTotalTransformation());
+			floor_rend.getShaderProgram().editUniform("camTranslationTrans", camera.getTranslationTransformation());
+		};
+		
+		setCameraUniforms.run();
+		camera.addPostPosEdit(setCameraUniforms);
+		
+	}	
 	
 	private static void init() {
 		Window.init();
@@ -192,6 +212,8 @@ public class Main {
 		initSkyRenderable();
 		initSky();
 		initStars();
+		
+		initFloorRenderable();
 		
 		initRenderable();
 		initMovement();
@@ -205,9 +227,10 @@ public class Main {
 			Time.tick();
 			sky_rend.render(true);
 			
-			player_rend.render(false);
-			player.tick();
+			floor_rend.render();
 			
+			player_rend.render();
+			player.tick();
 			
 			Keyboard.tick();
 			
@@ -218,6 +241,10 @@ public class Main {
 	private static void clean() {
 		Window.clean();
 		Mouse.clean();
+		
+		player_rend.clean();
+		sky_rend.clean();
+		floor_rend.clean();
 	}
 	
 	public static void main(String [] args) {

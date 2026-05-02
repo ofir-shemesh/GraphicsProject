@@ -1,13 +1,12 @@
 * tidy
-* add floor
 * add text
 * add text of time
 * add what happens when i press multiple buttons simultaneously
 * improve lighting shaders
 
-* add textures to models
-* add skybox
 * add moon and sun
+
 * add reflections
+* add textures to models
 * add barrel with normal map
 * maybe add height map

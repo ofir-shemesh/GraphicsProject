@@ -244,4 +244,42 @@ public class RawModelFactory {
 		return new RawModel(indices, buffers, new ArrayList<>());
 	}
 	
+	public static RawModel quadFloor(Vector3f center, Vector2f size) {
+		float x = center.x;
+		float y = center.y;
+		float z = center.z;
+		float hw = size.x / 2.0f;
+		float hh = size.y / 2.0f;
+		
+		float[] vertices = new float[] {
+				x-hw, y, z-hh,
+				x+hw, y, z-hh,
+				x-hw, y, z+hh,
+				x+hw, y, z+hh
+		};
+		
+		float[] normals = new float[] {
+				0.0f, 1.0f, 0.0f,
+				0.0f, 1.0f, 0.0f,
+				0.0f, 1.0f, 0.0f,
+				0.0f, 1.0f, 0.0f
+		};
+		
+		
+		int[] indices = new int[] {
+				0,1,2,
+				1,2,3
+		};
+		
+		List<MyFloatBuffer> buffers = new ArrayList<>();
+		
+        MyFloatBuffer vertexBuffer = new MyFloatBuffer(vertices, 3);
+		buffers.add(vertexBuffer);
+		
+		MyFloatBuffer normalsBuffer = new MyFloatBuffer(normals, 3);
+		buffers.add(normalsBuffer);
+		
+		return new RawModel(indices, buffers, new ArrayList<>());
+	}
+	
 }
