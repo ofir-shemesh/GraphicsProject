@@ -21,95 +21,131 @@ import entityRaw.RawModel;
 public class RawModelFactory {
 	
 	private static float[] createVerticesArray(AIMesh mesh) {
-		float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, minZ = Float.MAX_VALUE;
-        float maxX = Float.MIN_VALUE, maxY = Float.MIN_VALUE, maxZ = Float.MIN_VALUE;
-        
-		AIVector3D.Buffer verticesAiBuffer = mesh.mVertices();
-        float[] vertices = new float[verticesAiBuffer.remaining() * 3];
-        int i = 0;
-        while (verticesAiBuffer.hasRemaining()) {
-            AIVector3D v = verticesAiBuffer.get();
-            vertices[i++] = v.x();
-            vertices[i++] = v.y();
-            vertices[i++] = v.z();
-            
-            minX = Math.min(minX, v.x());
-            maxX = Math.max(maxX, v.x());
-
-            minY = Math.min(minY, v.y());
-            maxY = Math.max(maxY, v.y());
-            
-            minZ = Math.min(minZ, v.z());
-            maxZ = Math.max(maxZ, v.z());
-            
-        }
-        
-        float xScale = maxX-minX,
-        		yScale = maxY-minY,
-        		zScale = maxZ-minZ;
-        
-        float xCenter = (maxX+minX)/2;
-        float yCenter = (maxY+minY)/2;
-        float zCenter = (maxZ+minZ)/2;
-        
-        float scale = Math.max(Math.max(xScale, yScale), zScale);
-        
-        for (int j = 0; j < vertices.length; j+=3) {
-        	
-        	vertices[j] -= xCenter;
-        	vertices[j] /= scale;
-
-        	vertices[j+1] -= yCenter;
-        	vertices[j+1] /= scale;
-        	
-        	vertices[j+2] -= zCenter;
-        	vertices[j+2] /= scale;
-        }
-        
-        return vertices;
+	
+	    float minX = Float.POSITIVE_INFINITY;
+	    float minY = Float.POSITIVE_INFINITY;
+	    float minZ = Float.POSITIVE_INFINITY;
+	
+	    float maxX = Float.NEGATIVE_INFINITY;
+	    float maxY = Float.NEGATIVE_INFINITY;
+	    float maxZ = Float.NEGATIVE_INFINITY;
+	
+	    int vertexCount = mesh.mNumVertices();
+	
+	    float[] vertices = new float[vertexCount * 3];
+	
+	    for (int i = 0; i < vertexCount; i++) {
+	
+	        AIVector3D v = mesh.mVertices().get(i);
+	
+	        int idx = i * 3;
+	
+	        vertices[idx]     = v.x();
+	        vertices[idx + 1] = v.y();
+	        vertices[idx + 2] = v.z();
+	
+	        minX = Math.min(minX, v.x());
+	        maxX = Math.max(maxX, v.x());
+	
+	        minY = Math.min(minY, v.y());
+	        maxY = Math.max(maxY, v.y());
+	
+	        minZ = Math.min(minZ, v.z());
+	        maxZ = Math.max(maxZ, v.z());
+	    }
+	
+	    float xScale = maxX - minX;
+	    float yScale = maxY - minY;
+	    float zScale = maxZ - minZ;
+	
+	    float xCenter = (maxX + minX) * 0.5f;
+	    float yCenter = (maxY + minY) * 0.5f;
+	    float zCenter = (maxZ + minZ) * 0.5f;
+	
+	    float scale = Math.max(Math.max(xScale, yScale), zScale);
+	
+	    for (int i = 0; i < vertices.length; i += 3) {
+	
+	        vertices[i]     = (vertices[i]     - xCenter) / scale;
+	        vertices[i + 1] = (vertices[i + 1] - yCenter) / scale;
+	        vertices[i + 2] = (vertices[i + 2] - zCenter) / scale;
+	    }
+	
+	    return vertices;
 	}
 	
 	private static float[] createNormalsArray(AIMesh mesh) {
-		AIVector3D.Buffer normalsAiBuffer = mesh.mNormals();
-        float[] normals = new float[normalsAiBuffer.remaining() * 3];
-        int i = 0;
-        while (normalsAiBuffer.hasRemaining()) {
-            AIVector3D n = normalsAiBuffer.get();
-            normals[i++] = n.x();
-            normals[i++] = n.y();
-            normals[i++] = n.z();
-        }
-        
-        return normals;
-	}
 	
+	    int vertexCount = mesh.mNumVertices();
+	
+	    float[] normals = new float[vertexCount * 3];
+	
+	    AIVector3D.Buffer normalsBuffer = mesh.mNormals();
+	
+	    for (int i = 0; i < vertexCount; i++) {
+	
+	        AIVector3D n = normalsBuffer.get(i);
+	
+	        int idx = i * 3;
+	
+	        normals[idx]     = n.x();
+	        normals[idx + 1] = n.y();
+	        normals[idx + 2] = n.z();
+	    }
+	
+	    return normals;
+	}
+
 	private static float[] createTangentsArray(AIMesh mesh) {
-		AIVector3D.Buffer tangentAiBuffer = mesh.mTangents();
-        float[] tangents = new float[tangentAiBuffer.remaining() * 3];
-        int i = 0;
-        while (tangentAiBuffer.hasRemaining()) {
-            AIVector3D t = tangentAiBuffer.get();
-            tangents[i++] = t.x();
-            tangents[i++] = t.y();
-            tangents[i++] = t.z();
-        }
-        
-        return tangents;
+
+	    AIVector3D.Buffer tangentBuffer = mesh.mTangents();
+	
+	    int vertexCount = mesh.mNumVertices();
+	
+	    float[] tangents = new float[vertexCount * 3];
+	
+	    if (tangentBuffer == null) {
+	        return tangents; // all zeros if missing
+	    }
+	
+	    for (int i = 0; i < vertexCount; i++) {
+	
+	        AIVector3D t = tangentBuffer.get(i);
+	
+	        int idx = i * 3;
+	
+	        tangents[idx]     = t.x();
+	        tangents[idx + 1] = t.y();
+	        tangents[idx + 2] = t.z();
+	    }
+	
+	    return tangents;
 	}
 	
 	private static float[] createUVArray(AIMesh mesh) {
-		AIVector3D.Buffer uvAiBuffer = mesh.mTextureCoords(0);
-        float[] uvs = new float[uvAiBuffer.remaining() * 2];
-        int i = 0;
-        while (uvAiBuffer.hasRemaining()) {
-            AIVector3D uv = uvAiBuffer.get();
-            uvs[i++] = uv.x();
-            uvs[i++] = uv.y();
-        }
-        
-        return uvs;
+
+	    AIVector3D.Buffer uvBuffer = mesh.mTextureCoords(0);
+
+	    int vertexCount = mesh.mNumVertices();
+
+	    float[] uvs = new float[vertexCount * 2];
+
+	    if (uvBuffer == null) {
+	        return uvs; // all 0,0 UVs
+	    }
+
+	    for (int i = 0; i < vertexCount; i++) {
+
+	        AIVector3D uv = uvBuffer.get(i);
+
+	        int idx = i * 2;
+
+	        uvs[idx]     = uv.x();
+	        uvs[idx + 1] = uv.y();
+	    }
+
+	    return uvs;
 	}
-	
 	
 	private static int[] createIndicesArray(AIMesh mesh) {
 		AIFace.Buffer faces = mesh.mFaces();
@@ -131,10 +167,18 @@ public class RawModelFactory {
 	//The Actual Loaders:
 	
 	public static RawModel OBJModel(String file) {
-		AIScene scene = Assimp.aiImportFile(file,
-                Assimp.aiProcess_Triangulate | 
-                Assimp.aiProcess_JoinIdenticalVertices | 
-                Assimp.aiProcess_FlipUVs);
+		return OBJModel(file, false, false);
+	}
+	
+	public static RawModel OBJModel(String file, boolean with_uv, boolean with_tangents) {
+		int flags =
+		        Assimp.aiProcess_Triangulate |
+		        Assimp.aiProcess_JoinIdenticalVertices;
+		if (with_tangents) {
+		    flags |= Assimp.aiProcess_CalcTangentSpace;
+		}
+
+		AIScene scene = Assimp.aiImportFile(file, flags);
 
         if (scene == null) {
             System.err.println("Failed to load OBJ");
@@ -152,6 +196,17 @@ public class RawModelFactory {
         //Indices
         int[] indices = createIndicesArray(mesh);
         
+        float[] uvs = {};
+        float[] tangents = {};
+        
+        if (with_tangents) {
+        	tangents = createTangentsArray(mesh);
+        }
+        
+        if (with_uv) {
+        	uvs = createUVArray(mesh);
+        }
+        
         Assimp.aiReleaseImport(scene);
         
         //Create Model Data
@@ -163,7 +218,17 @@ public class RawModelFactory {
 		
 		MyFloatBuffer normalsBuffer = new MyFloatBuffer(normals, 3);
 		float_buffers.add(normalsBuffer);
-	
+		
+		if (with_tangents) {
+			MyFloatBuffer tangentsBuffer = new MyFloatBuffer(tangents, 3);
+			float_buffers.add(tangentsBuffer);			
+		}
+		
+		if (with_uv) {
+			MyFloatBuffer uvBuffer = new MyFloatBuffer(uvs, 2);
+			float_buffers.add(uvBuffer);	
+		}	
+		
 		return new RawModel(indices, float_buffers, new ArrayList<>());
 	}
 	
