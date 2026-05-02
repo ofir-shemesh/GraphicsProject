@@ -210,7 +210,8 @@ public class Main {
 		RawModel model = RawModelFactory.OBJModel("res/models/barrel.obj", true, true);
 		ShaderProgram program = new ShaderProgram("res/shaders/barrel/vert.vert", "res/shaders/barrel/frag.frag");
 		Texture texture = new Texture("res/textures/barrel/barrel.png", false);
-		Texture[] textures = {texture};
+		Texture normalTexture = new Texture("res/textures/barrel/barrelNormal.png", false);
+		Texture[] textures = {texture, normalTexture};
 
 		barrel_rend = new Renderable(model, program, textures);
 		
