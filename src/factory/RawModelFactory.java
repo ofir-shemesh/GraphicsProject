@@ -83,6 +83,34 @@ public class RawModelFactory {
         return normals;
 	}
 	
+	private static float[] createTangentsArray(AIMesh mesh) {
+		AIVector3D.Buffer tangentAiBuffer = mesh.mTangents();
+        float[] tangents = new float[tangentAiBuffer.remaining() * 3];
+        int i = 0;
+        while (tangentAiBuffer.hasRemaining()) {
+            AIVector3D t = tangentAiBuffer.get();
+            tangents[i++] = t.x();
+            tangents[i++] = t.y();
+            tangents[i++] = t.z();
+        }
+        
+        return tangents;
+	}
+	
+	private static float[] createUVArray(AIMesh mesh) {
+		AIVector3D.Buffer uvAiBuffer = mesh.mTextureCoords(0);
+        float[] uvs = new float[uvAiBuffer.remaining() * 2];
+        int i = 0;
+        while (uvAiBuffer.hasRemaining()) {
+            AIVector3D uv = uvAiBuffer.get();
+            uvs[i++] = uv.x();
+            uvs[i++] = uv.y();
+        }
+        
+        return uvs;
+	}
+	
+	
 	private static int[] createIndicesArray(AIMesh mesh) {
 		AIFace.Buffer faces = mesh.mFaces();
         int totalIndices = faces.remaining() * 3; // since we used aiProcess_Triangulate
@@ -135,7 +163,6 @@ public class RawModelFactory {
 		
 		MyFloatBuffer normalsBuffer = new MyFloatBuffer(normals, 3);
 		float_buffers.add(normalsBuffer);
-		
 	
 		return new RawModel(indices, float_buffers, new ArrayList<>());
 	}

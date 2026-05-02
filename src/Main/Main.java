@@ -36,6 +36,8 @@ public class Main {
 	
 	private static Renderable floor_rend;
 	
+	private static Renderable barrel_rend;
+	
 	// Player & Camera
 	
 	private static void initRenderable() {
@@ -202,6 +204,25 @@ public class Main {
 		
 	}	
 	
+	//Barrel
+	
+	private static void initBarrelRenderable() {
+		RawModel model = RawModelFactory.OBJModel("res/models/barrel.obj");
+		ShaderProgram program = new ShaderProgram("res/shaders/barrel/vert.vert", "res/shaders/barrel/frag.frag");
+		Texture texture = new Texture("res/textures/barrel/barrel.png", true);
+		Texture[] textures = {texture};
+
+		barrel_rend = new Renderable(model, program, textures);
+		
+		Runnable setCameraUniforms = () -> {
+			barrel_rend.getShaderProgram().editUniform("camTrans", camera.getTotalTransformation());
+		};
+		
+		setCameraUniforms.run();
+		camera.addPostPosEdit(setCameraUniforms);
+		
+	}
+	
 	private static void init() {
 		Window.init();
 		Keyboard.init();
@@ -217,6 +238,8 @@ public class Main {
 		
 		initRenderable();
 		initMovement();
+		
+		initBarrelRenderable();
 	}
 	
 	private static void loop() {
@@ -232,6 +255,8 @@ public class Main {
 			player_rend.render();
 			player.tick();
 			
+			barrel_rend.render();
+			
 			Keyboard.tick();
 			
 			Window.loop_after();			
@@ -245,6 +270,7 @@ public class Main {
 		player_rend.clean();
 		sky_rend.clean();
 		floor_rend.clean();
+		barrel_rend.clean();
 	}
 	
 	public static void main(String [] args) {
