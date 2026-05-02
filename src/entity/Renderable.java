@@ -57,6 +57,10 @@ public class Renderable {
 		shaderProgram.editUniform("texSam" + i, i);
 	}
 }
+	public void render() {
+		render(false);
+	}
+	
 	public void render(boolean GUI) {
 		if (GUI) {
 			glDepthMask(false);

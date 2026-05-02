@@ -2,9 +2,14 @@ package main;
 
 import entityRaw.*;
 import factory.RawModelFactory;
+import color.Color;
+import color.ColorGradient;
+import color.GradientElement;
 import input.Keyboard;
 import input.Mouse;
 import player.Player;
+import sky.Sky;
+import sky.Time;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
@@ -22,14 +27,19 @@ public class Main {
 	
 	private static Camera camera;
 	
-	private static Renderable rend;
+	private static Renderable player_rend;
 	private static Player player;
+	
+	private static Renderable sky_rend;
+	private static Sky sky;
+	
+	// Player & Camera
 	
 	private static void initRenderable() {
 		RawModel model = RawModelFactory.OBJModel("res/models/bunny.obj");
-		ShaderProgram program = new ShaderProgram("res/shaders/vert.vert", "res/shaders/frag.frag");
+		ShaderProgram program = new ShaderProgram("res/shaders/player/vert.vert", "res/shaders/player/frag.frag");
 		
-		rend = new Renderable(model, program, new Texture[] {});
+		player_rend = new Renderable(model, program, new Texture[] {});
 	}
 	
 	private static void run() {
@@ -73,8 +83,8 @@ public class Main {
 		});
 		
 		Runnable setPlayerUniforms = () -> {
-			rend.getShaderProgram().editUniform("translationTrans", player.getTranslation());
-			rend.getShaderProgram().editUniform("rotationTrans", player.getRotation());			
+			player_rend.getShaderProgram().editUniform("translationTrans", player.getTranslation());
+			player_rend.getShaderProgram().editUniform("rotationTrans", player.getRotation());			
 		};
 		
 		Runnable setCameraPosition = () -> {
@@ -82,7 +92,7 @@ public class Main {
 		};
 		
 		Runnable setCameraUniforms = () -> {
-			rend.getShaderProgram().editUniform("camTrans", camera.getTotalTransformation());
+			player_rend.getShaderProgram().editUniform("camTrans", camera.getTotalTransformation());
 		};
 		
 		Mouse.onMovement((prevx, prevy, currx, curry) -> {
@@ -99,14 +109,90 @@ public class Main {
 		camera.addPostPosEdit(setCameraUniforms);
 	}
 	
+	// Sky 
+	
+	private static void initStars() {
+		Runnable setCameraUniforms = () -> {
+			sky_rend.getShaderProgram().editUniform("camTrans", camera.getPersAngTrans());
+		};
+		
+		setCameraUniforms.run();
+		camera.addPostRotEdit(setCameraUniforms);
+		
+		
+	}
+	
+	private static void initSkyRenderable() {
+		RawModel model = RawModelFactory.screenQuad();
+		ShaderProgram program = new ShaderProgram("res/shaders/sky/vert.vert", "res/shaders/sky/frag.frag");
+		Texture texture = new Texture("res/textures/sky/skybox/", true);
+		Texture[] textures = {texture};
+		
+		sky_rend = new Renderable(model, program, textures);
+	}
+	
+	private static void initSky() {
+		ColorGradient gradient_top = new ColorGradient(new GradientElement[] {
+			    // Night — deep dark blue
+			    new GradientElement(new Color(0.03f, 0.05f, 0.12f, 1.0f), 0.05f, 0.08f),
+			    // Blue hour — faint violet-blue
+			    new GradientElement(new Color(0.12f, 0.10f, 0.25f, 1.0f), 0.05f, 0.08f),
+			    // Sunrise — purple to gold transition
+			    new GradientElement(new Color(0.30f, 0.20f, 0.60f, 1.0f), 0.06f, 0.09f),
+			    // Morning — light clear blue
+			    new GradientElement(new Color(0.45f, 0.65f, 0.95f, 1.0f), 0.07f, 0.09f),
+			    // Noon — bright pure sky blue
+			    new GradientElement(new Color(0.25f, 0.55f, 1.00f, 1.0f), 0.07f, 0.09f),
+			    // Afternoon — softer, slightly warm blue
+			    new GradientElement(new Color(0.40f, 0.60f, 0.95f, 1.0f), 0.05f, 0.08f),
+			    // Sunset — orange-pink blend
+			    new GradientElement(new Color(0.75f, 0.35f, 0.50f, 1.0f), 0.05f, 0.08f),
+			    // Evening — deep indigo
+			    new GradientElement(new Color(0.15f, 0.20f, 0.45f, 1.0f), 0.05f, 0.08f)
+			});
+
+		ColorGradient gradient_bottom = new ColorGradient(new GradientElement[] {
+		    // Night — dark horizon
+		    new GradientElement(new Color(0.02f, 0.03f, 0.06f, 1.0f), 0.05f, 0.08f),
+		    // Blue hour — cool dark blue
+		    new GradientElement(new Color(0.10f, 0.12f, 0.20f, 1.0f), 0.05f, 0.08f),
+		    // Sunrise — orange glow
+		    new GradientElement(new Color(0.90f, 0.55f, 0.25f, 1.0f), 0.06f, 0.09f),
+		    // Morning — pale soft blue
+		    new GradientElement(new Color(0.65f, 0.80f, 0.95f, 1.0f), 0.07f, 0.09f),
+		    // Noon — bright near-white blue
+		    new GradientElement(new Color(0.55f, 0.85f, 1.00f, 1.0f), 0.07f, 0.09f),
+		    // Afternoon — faint golden tint
+		    new GradientElement(new Color(0.80f, 0.85f, 0.90f, 1.0f), 0.05f, 0.08f),
+		    // Sunset — vivid orange-red
+		    new GradientElement(new Color(0.95f, 0.40f, 0.20f, 1.0f), 0.05f, 0.08f),
+		    // Evening — purple-gray horizon
+		    new GradientElement(new Color(0.40f, 0.25f, 0.50f, 1.0f), 0.05f, 0.08f)
+		});
+		
+		sky = new Sky(gradient_top, gradient_bottom);	
+		
+		Runnable updateSkyUniforms = () -> {
+			sky.applyToShader(sky_rend.getShaderProgram());	
+		};
+		
+		updateSkyUniforms.run();
+		
+		Time.addPostTick(updateSkyUniforms);
+	}
 	
 	
 	private static void init() {
 		Window.init();
 		Keyboard.init();
 		Mouse.init();
-		
+
 		initCamera();
+
+		initSkyRenderable();
+		initSky();
+		initStars();
+		
 		initRenderable();
 		initMovement();
 	}
@@ -115,8 +201,13 @@ public class Main {
 		while (!Window.shouldClose()) { 
 			Window.loop_before();
 			
-			rend.render(false);
+
+			Time.tick();
+			sky_rend.render(true);
+			
+			player_rend.render(false);
 			player.tick();
+			
 			
 			Keyboard.tick();
 			

@@ -1,8 +1,19 @@
 package sky;
 
 public class Time {
-	public static float SPEED = 0.00015f;
-	private static float time = 0.3f;
+	public static float SPEED = 0.0004f;
+	private static float time = 0.0f;
+	
+	private static Runnable onTick = () -> {};
+	
+	public static void addPostTick(Runnable addition) {
+		Runnable old = onTick;
+		
+		onTick = () -> {
+			old.run();
+			addition.run();
+		};
+	}
 	
 	public static String getTimeText() {
 	    float hours_f = time * 24;
@@ -20,5 +31,7 @@ public class Time {
 	public static void tick() {
 		time += SPEED;
 		time %= 1.0f;
+		
+		onTick.run();
 	}
 }
