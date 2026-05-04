@@ -10,11 +10,11 @@ import java.nio.IntBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBImage;
 
-import entityRaw.RawImage;
+import render.raw.components.RawTexture;
 
 public class Utils {
 	
-	public static entityRaw.RawImage getImageData(String path) {
+	public static RawTexture getImageData(String path) {
 		IntBuffer width = BufferUtils.createIntBuffer(1);
         IntBuffer height = BufferUtils.createIntBuffer(1);
         IntBuffer channels = BufferUtils.createIntBuffer(1);
@@ -25,10 +25,10 @@ public class Utils {
         }
     	STBImage.stbi_set_flip_vertically_on_load(false);
 
-        return new RawImage(image, width.get(0), height.get(0));
+        return new RawTexture(image, width.get(0), height.get(0));
 	}
 	
-	public static RawImage getImageData(String path, boolean cubeMap) {
+	public static RawTexture getImageData(String path, boolean cubeMap) {
 		IntBuffer width = BufferUtils.createIntBuffer(1);
         IntBuffer height = BufferUtils.createIntBuffer(1);
         IntBuffer channels = BufferUtils.createIntBuffer(1);
@@ -64,7 +64,7 @@ public class Utils {
         	}
         }
         
-        return new RawImage(image, width.get(0), height.get(0));
+        return new RawTexture(image, width.get(0), height.get(0));
 	}
 
 	public static IntBuffer createIntBuffer(int[] data) {

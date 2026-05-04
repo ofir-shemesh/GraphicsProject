@@ -4,7 +4,5 @@
 * add what happens when i press multiple buttons simultaneously
 * improve lighting shaders
 
-* add moon and sun
-
 // distribute to all light affected objects
 // distribute to all camera affected objects

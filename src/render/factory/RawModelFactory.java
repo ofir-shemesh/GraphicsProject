@@ -1,4 +1,4 @@
-package factory;
+package render.factory;
 
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -12,11 +12,8 @@ import org.lwjgl.assimp.AIScene;
 import org.lwjgl.assimp.AIVector3D;
 import org.lwjgl.assimp.Assimp;
 
-
-import utils.MyFloatBuffer;
-import entityRaw.RawModel;
-//import text.Font;
-//import text.LetterData;
+import render.raw.buffers.RawFloatBuffer;
+import render.raw.components.RawModel;
 
 public class RawModelFactory {
 	
@@ -211,21 +208,21 @@ public class RawModelFactory {
         
         //Create Model Data
         
-        List<MyFloatBuffer> float_buffers = new ArrayList<>();
+        List<RawFloatBuffer> float_buffers = new ArrayList<>();
 		
-        MyFloatBuffer vertexBuffer = new MyFloatBuffer(vertices, 3);
+        RawFloatBuffer vertexBuffer = new RawFloatBuffer(vertices, 3);
 		float_buffers.add(vertexBuffer);
 		
-		MyFloatBuffer normalsBuffer = new MyFloatBuffer(normals, 3);
+		RawFloatBuffer normalsBuffer = new RawFloatBuffer(normals, 3);
 		float_buffers.add(normalsBuffer);
 		
 		if (with_tangents) {
-			MyFloatBuffer tangentsBuffer = new MyFloatBuffer(tangents, 3);
+			RawFloatBuffer tangentsBuffer = new RawFloatBuffer(tangents, 3);
 			float_buffers.add(tangentsBuffer);			
 		}
 		
 		if (with_uv) {
-			MyFloatBuffer uvBuffer = new MyFloatBuffer(uvs, 2);
+			RawFloatBuffer uvBuffer = new RawFloatBuffer(uvs, 2);
 			float_buffers.add(uvBuffer);	
 		}	
 		
@@ -250,9 +247,9 @@ public class RawModelFactory {
 				1,2,3
 		};
 		
-		List<MyFloatBuffer> buffers = new ArrayList<>();
+		List<RawFloatBuffer> buffers = new ArrayList<>();
 		
-        MyFloatBuffer vertexBuffer = new MyFloatBuffer(vertices, 2);
+        RawFloatBuffer vertexBuffer = new RawFloatBuffer(vertices, 2);
 		buffers.add(vertexBuffer);
 		
 		return new RawModel(indices, buffers, new ArrayList<>());
@@ -276,12 +273,12 @@ public class RawModelFactory {
 				1,2,3
 		};
 		
-		List<MyFloatBuffer> buffers = new ArrayList<>();
+		List<RawFloatBuffer> buffers = new ArrayList<>();
 		
-        MyFloatBuffer vertexBuffer = new MyFloatBuffer(vertices, 2);
+        RawFloatBuffer vertexBuffer = new RawFloatBuffer(vertices, 2);
 		buffers.add(vertexBuffer);
 
-        MyFloatBuffer uvBuffer = new MyFloatBuffer(uv, 2);
+        RawFloatBuffer uvBuffer = new RawFloatBuffer(uv, 2);
 		buffers.add(uvBuffer);
 		
 		return new RawModel(indices, buffers, new ArrayList<>());
@@ -289,51 +286,6 @@ public class RawModelFactory {
 	
 	public static RawModel screenQuad() {
 		return quad2D(new Vector2f().zero(), new Vector2f(2.0f, 2.0f));
-	}
-	
-	public static RawModel createOrbitalQuad(Vector3f north, Vector3f west, float size) {
-		Vector3f ray = new Vector3f(west).normalize();
-		Vector3f side1 = new Vector3f(north).normalize();
-		Vector3f side2 = new Vector3f(ray).cross(side1);
-		side1.mul(size/2.0f);
-		side2.mul(size/2.0f);
-		
-		Vector3f[] vertices_vecs = new Vector3f[] {
-				new Vector3f(ray).sub(side1).sub(side2),
-				new Vector3f(ray).add(side1).sub(side2),
-				new Vector3f(ray).sub(side1).add(side2),
-				new Vector3f(ray).add(side1).add(side2)
-		};
-		
-		float[] vertices = new float[12];
-		
-		for (int i = 0; i < 4; i++) {
-			vertices[3*i+0] = vertices_vecs[i].x;
-			vertices[3*i+1] = vertices_vecs[i].y;
-			vertices[3*i+2] = vertices_vecs[i].z;
-		}
-
-		float[] uv = new float[]  {
-				0.0f, 0.0f,
-				1.0f, 0.0f,
-				0.0f, 1.0f,
-				1.0f, 1.0f				
-		};
-		
-		int[] indices = new int[] {
-				0,1,2,
-				1,2,3
-		};
-		
-		List<MyFloatBuffer> buffers = new ArrayList<>();
-		
-		MyFloatBuffer vertexBuffer = new MyFloatBuffer(vertices, 3);
-		buffers.add(vertexBuffer);
-		
-		MyFloatBuffer uvBuffer = new MyFloatBuffer(uv, 2);
-		buffers.add(uvBuffer);
-		
-		return new RawModel(indices, buffers, new ArrayList<>());
 	}
 	
 	public static RawModel quadFloor(Vector3f center, Vector2f size) {
@@ -363,12 +315,12 @@ public class RawModelFactory {
 				1,2,3
 		};
 		
-		List<MyFloatBuffer> buffers = new ArrayList<>();
+		List<RawFloatBuffer> buffers = new ArrayList<>();
 		
-        MyFloatBuffer vertexBuffer = new MyFloatBuffer(vertices, 3);
+        RawFloatBuffer vertexBuffer = new RawFloatBuffer(vertices, 3);
 		buffers.add(vertexBuffer);
 		
-		MyFloatBuffer normalsBuffer = new MyFloatBuffer(normals, 3);
+		RawFloatBuffer normalsBuffer = new RawFloatBuffer(normals, 3);
 		buffers.add(normalsBuffer);
 		
 		return new RawModel(indices, buffers, new ArrayList<>());

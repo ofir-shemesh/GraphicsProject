@@ -1,20 +1,28 @@
 package sky;
 
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * class representing the "Game time"
+ * 
+ * - enables adding runnables after each tick
+ * - the time is between [0,1]
+ * - enables textual time representation as hh:mm
+ */
 public class Time {
 	public static float SPEED = 0.0004f;
 	private static float time = 0.0f;
 	
-	private static Runnable onTick = () -> {};
+	private final static List<Runnable> onTickListeners = new ArrayList<>();
 	
-	public static void addPostTick(Runnable addition) {
-		Runnable old = onTick;
-		
-		onTick = () -> {
-			old.run();
-			addition.run();
-		};
+	public static void addPostTick(Runnable listener) {
+		onTickListeners.add(listener);
 	}
 	
+	/**
+	 * @return textual representation of the time as hh:mm
+	 */
 	public static String getTimeText() {
 	    float hours_f = time * 24;
 	    int hours = (int) Math.floor(hours_f);
@@ -28,10 +36,16 @@ public class Time {
 		return time;
 	}
 	
+	/**
+	 * - advances time
+	 * - runs the runnables
+	 */
 	public static void tick() {
 		time += SPEED;
 		time %= 1.0f;
 		
-		onTick.run();
+		for (Runnable r : onTickListeners) {
+	        r.run();
+	    }
 	}
 }

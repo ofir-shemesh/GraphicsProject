@@ -1,13 +1,17 @@
 package main;
 
-import entityRaw.*;
-import factory.RawModelFactory;
 import color.Color;
 import color.ColorGradient;
 import color.GradientElement;
 import input.Keyboard;
 import input.Mouse;
 import player.Player;
+import render.components.ShaderProgram;
+import render.components.Texture;
+import render.factory.RawModelFactory;
+import render.raw.components.*;
+import render.scene.Renderable;
+import sky.Light;
 import sky.Sky;
 import sky.Time;
 
@@ -20,8 +24,6 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import camera.Camera;
-import entity.Renderable;
-import entityData.*;
 import utils.MyMath;
 
 public class Main {
@@ -58,7 +60,7 @@ public class Main {
 				0.0f, 0.0f, 0.0f,
 				0.1f, 10.0f, MyMath.pi/6, 1.0f);
 		
-		Mouse.onMovement((prevx, prevy, currx, curry) -> {
+		Mouse.addMovementRunnable((prevx, prevy, currx, curry) -> {
 			camera.increasePitch((currx-prevx)*0.005f);
 			camera.increaseYaw((curry-prevy)*0.005f);
 		});
@@ -97,10 +99,10 @@ public class Main {
 		};
 		
 		Runnable setCameraUniforms = () -> {
-			player_rend.getShaderProgram().editUniform("camTrans", camera.getTotalTransformation());
+			player_rend.getShaderProgram().editUniform("camTrans", camera.getModelViewProjectionMatrix());
 		};
 		
-		Mouse.onMovement((prevx, prevy, currx, curry) -> {
+		Mouse.addMovementRunnable((prevx, prevy, currx, curry) -> {
 			setCameraPosition.run();
 		});
 		
@@ -111,18 +113,18 @@ public class Main {
 		player.addPostPosEdit(setPlayerUniforms);
 		player.addPostPosEdit(setCameraPosition);
 		
-		camera.addPostPosEdit(setCameraUniforms);
+		camera.addPositionChangeListener(setCameraUniforms);
 	}
 	
 	// Sky 
 	
 	private static void initStars() {
 		Runnable setCameraUniforms = () -> {
-			sky_rend.getShaderProgram().editUniform("camTrans", camera.getPersAngTrans());
+			sky_rend.getShaderProgram().editUniform("camTrans", camera.getViewProjectionMatrix());
 		};
 		
 		setCameraUniforms.run();
-		camera.addPostRotEdit(setCameraUniforms);
+		camera.addRotationChangeListener(setCameraUniforms);
 		
 		
 	}
@@ -195,12 +197,12 @@ public class Main {
 		floor_rend = new Renderable(model, program, new Texture[] {});
 		
 		Runnable setCameraUniforms = () -> {
-			floor_rend.getShaderProgram().editUniform("camTrans", camera.getTotalTransformation());
+			floor_rend.getShaderProgram().editUniform("camTrans", camera.getModelViewProjectionMatrix());
 			floor_rend.getShaderProgram().editUniform("camTranslationTrans", camera.getTranslationTransformation());
 		};
 		
 		setCameraUniforms.run();
-		camera.addPostPosEdit(setCameraUniforms);
+		camera.addPositionChangeListener(setCameraUniforms);
 		
 	}	
 	
@@ -216,21 +218,42 @@ public class Main {
 		barrel_rend = new Renderable(model, program, textures);
 		
 		Runnable setCameraUniforms = () -> {
-			barrel_rend.getShaderProgram().editUniform("camTrans", camera.getTotalTransformation());
+			barrel_rend.getShaderProgram().editUniform("camTrans", camera.getModelViewProjectionMatrix());
 		};
 		
 		setCameraUniforms.run();
-		camera.addPostPosEdit(setCameraUniforms);
+		camera.addPositionChangeListener(setCameraUniforms);
 		
+	}
+	
+	//Light
+	
+	private static void initLight() {
+		Vector3f north = new Vector3f(1.0f, 0.0f, 0.0f);
+		Vector3f west = new Vector3f(0.0f, 0.0f, -1.0f);
+		
+		float speed = MyMath.pi*2 * Time.SPEED;
+		
+		Light.init(north, west, 0.0f, speed);
+		
+		Runnable editLightShaders = () -> {
+			Vector3f direction = Light.getDirection();
+			player_rend.getShaderProgram().editUniform("lightDir", direction);
+			barrel_rend.getShaderProgram().editUniform("lightDir", direction);
+		};
+		
+		Light.addPostRotEdit(editLightShaders);
+		editLightShaders.run();
 	}
 	
 	private static void init() {
 		Window.init();
 		Keyboard.init();
 		Mouse.init();
-
+		
+		
 		initCamera();
-
+		
 		initSkyRenderable();
 		initSky();
 		initStars();
@@ -241,6 +264,7 @@ public class Main {
 		initMovement();
 		
 		initBarrelRenderable();
+		initLight();
 	}
 	
 	private static void loop() {
@@ -249,8 +273,9 @@ public class Main {
 			
 
 			Time.tick();
-			sky_rend.render(true);
+			Light.tick();
 			
+			sky_rend.render(true);			
 			floor_rend.render();
 			
 			player_rend.render();
@@ -266,7 +291,6 @@ public class Main {
 	
 	private static void clean() {
 		Window.clean();
-		Mouse.clean();
 		
 		player_rend.clean();
 		sky_rend.clean();

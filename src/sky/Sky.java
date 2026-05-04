@@ -1,31 +1,40 @@
 package sky;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import color.Color;
 import color.ColorGradient;
-import entityData.ShaderProgram;
+import render.components.ShaderProgram;
 import utils.MyMath;
 
+/**
+ * a class representing the sky and containing information for rendering it
+ * 
+ * - contains a color gradient from top to bottom that changes gradually with time
+ * - contains stars intensity
+ */
 public class Sky {
 	private ColorGradient gradient_top, gradient_bottom;
-	private Runnable postColor;
+	private List<Runnable> onColorChangeListeners = new ArrayList<>();
 	
 	public Sky(ColorGradient gradient_top, ColorGradient gradient_bottom) {
 		this.gradient_top = gradient_top;
 		this.gradient_bottom = gradient_bottom;
-		this.postColor = () -> {
-			
-		};
 	}
 	
-	public void addPostColor(Runnable addition) {
-		Runnable old = postColor;
-		
-		postColor = ()-> {
-			old.run();
-			addition.run();
-		};
+	public void addColorListeners(Runnable listener) {
+		onColorChangeListeners.add(listener);
 	}
-
+	
+	/**
+	 * updates the relevant uniforms in the shader program
+	 * - color_top
+	 * - color_bottom
+	 * - stars_intensity
+	 * 
+	 * @param program - shader program to be affected
+	 */
 	public void applyToShader(ShaderProgram program) {
 		Color color_top = gradient_top.getColor(Time.getTime());
 		Color color_bottom = gradient_bottom.getColor(Time.getTime());
@@ -34,9 +43,12 @@ public class Sky {
 		program.editUniform("color_bottom", color_bottom);
 		program.editUniform("starsIntensity", getStarsIntensity());
 
-		postColor.run();
+		for (Runnable r : onColorChangeListeners) {
+			r.run();
+		}
 	}
 
+	// Getters
 	
 	public Color getColorTop() {
 		Color color_top = gradient_top.getColor(Time.getTime());

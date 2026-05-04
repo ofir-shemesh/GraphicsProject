@@ -1,62 +1,84 @@
 package color;
 
+import utils.MyMath;
+
+/**
+ * Represents a color gradient animation.
+ * contains a list of colors each being held a certain duration and then
+ * linearly interpolated to the next color in a certain duration
+ * 
+ * The gradient is treated as cyclic, meaning it repeats after completing
+ * all elements.
+ */
 public class ColorGradient {
 	GradientElement[] elements;
 	
 	public ColorGradient(GradientElement[] elements) {
-		this.elements = elements;
+		if (elements == null || elements.length == 0) {
+	        throw new IllegalArgumentException("Gradient must have at least one element");
+	    }
+	    this.elements = elements.clone();
 	}
 	
-	public float getTotalTime() {
+	// Gets the total duration of the gradient animation
+	
+	public float getDuration() {
 		float sum = 0.0f;
 		
 		for (GradientElement element : elements) {
-			sum += element.getTotalTime();
+			sum += element.getDuration();
 		}
 
 		return sum;
 	}
 	
-	private float interpolate(float val1, float val2, float t) {
-		return val1*(1.0f-t)+val2*t;
-	}
-	
-	private Color interpolate(Color color1, Color color2, float t) {
-		float r = interpolate(color1.getR(), color2.getR(), t);
-		float g = interpolate(color1.getG(), color2.getG(), t);
-		float b = interpolate(color1.getB(), color2.getB(), t);
-		float a = interpolate(color1.getA(), color2.getA(), t);
-		
-		return new Color(r,g,b,a);
-	}
+	/**
+	 * Evaluates the gradient color at a given normalized time.
+	 *
+	 * Each element has two phases:
+	 * - Hold phase: color remains constant
+	 * - Transition phase: color interpolates to the next element
+	 *
+	 * @param fraction - fraction of the total duration used to sample the color
+	 * @return interpolated Color at the given time
+	 */
 	
 	public Color getColor(float fraction) {
-		float time = fraction * getTotalTime();
-		time %= getTotalTime();
+		// converts from fraction to actual time
+		float time = fraction * getDuration();
+		time %= getDuration();
 		
-		float prev_time = 0.0f;
+		// loops through the elements to find the relevant one
+		
+		float element_start_time = 0.0f;//
 		int size = elements.length;
 		
 		for (int i = 0; i < size; i++) {
 			GradientElement element = elements[i];
-			float next_time = prev_time + element.getTotalTime();
+			float element_finish_time = element_start_time + element.getDuration();
 			
-			if (next_time > time) {
-				GradientElement next_element = elements[(i+1) % size];
-
-				float end_fix_time = prev_time + element.getFixation();
+			// here we are at the correct element
+			if (element_finish_time > time) {
 				
-				if (time >= end_fix_time) {
-					float t = (time-end_fix_time) / (next_time-end_fix_time);
-					return interpolate(element.getColor(), next_element.getColor(), t);					
+				// here we used % size to make the gradient cyclic
+				GradientElement next_element = elements[(i+1) % size];
+				
+				float elment_finish_hold_time = element_start_time + element.getHoldTime();
+				
+				// inside the transition to the next element
+				if (time >= elment_finish_hold_time) {	
+					float t = (time-elment_finish_hold_time) / (element_finish_time-elment_finish_hold_time);
+					return MyMath.lerp(element.getColor(), next_element.getColor(), t);					
+				// inside the hold period of the current element
 				}else {
 					return element.getColor();
 				}
 			}
-			prev_time = next_time;
+			element_start_time = element_finish_time;
 		}
 		
-		return new Color(0.0f, 0.0f, 0.0f, 1.0f);
+		//Should not get here since there should always be at least one element
+		throw new IllegalStateException("Gradient evaluation failed");
 	}
 	
 }

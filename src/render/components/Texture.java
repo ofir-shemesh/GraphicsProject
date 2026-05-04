@@ -1,4 +1,4 @@
-package entityData;
+package render.components;
 
 import static org.lwjgl.opengl.GL11.GL_LINEAR;
 import static org.lwjgl.opengl.GL11.GL_LINEAR_MIPMAP_LINEAR;
@@ -26,14 +26,15 @@ import java.nio.IntBuffer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBImage;
 
-import entityRaw.RawImage;
+import render.raw.components.RawTexture;
+
 
 public class Texture {
 	private int width, height;
 	private int texID;
 	private final boolean cubeMap;
 	
-	private static RawImage getImageData(String path, boolean cubeMap) {
+	private static RawTexture getImageData(String path, boolean cubeMap) {
 		IntBuffer width = BufferUtils.createIntBuffer(1);
         IntBuffer height = BufferUtils.createIntBuffer(1);
         IntBuffer channels = BufferUtils.createIntBuffer(1);
@@ -69,7 +70,7 @@ public class Texture {
         	}
         }
         
-        return new RawImage(image, width.get(0), height.get(0));
+        return new RawTexture(image, width.get(0), height.get(0));
 	}
 	
 	private void setupTextureRegular(int texture, String path) {
@@ -78,7 +79,7 @@ public class Texture {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         
-        RawImage imageData = getImageData(path, false);
+        RawTexture imageData = getImageData(path, false);
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageData.getWidth(), imageData.getHeight(),
                      0, GL_RGBA, GL_UNSIGNED_BYTE, imageData.getImage());
@@ -100,7 +101,7 @@ public class Texture {
 			};
 
 			for (int i = 0; i < 6; i++) {
-		        RawImage imageData = getImageData(path + files[i], true);
+		        RawTexture imageData = getImageData(path + files[i], true);
 				
 			    ByteBuffer image = imageData.getImage(); // load with STBImage or similar
 			    width = imageData.getWidth();

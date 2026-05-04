@@ -1,4 +1,4 @@
-package entityData;
+package render.components;
 
 import static org.lwjgl.opengl.GL11.GL_FALSE;
 import static org.lwjgl.opengl.GL20.GL_COMPILE_STATUS;
@@ -34,6 +34,15 @@ import org.joml.Vector4f;
 import utils.Utils;
 import color.Color;
 
+/**
+ * Represents an OpenGL shader program used for rendering.
+ *
+ * It also provides utility methods for updating uniform variables
+ * of various types
+ *
+ * - Must be explicitly cleaned using {@code clean()} to free GPU resources
+ *
+ */
 public class ShaderProgram {
 	int programID;
 	
@@ -41,12 +50,15 @@ public class ShaderProgram {
 		programID = createShaderProgram(vertexFile, fragmentFile);
 	}
 	
-	public void clean() {
-		glDeleteProgram(programID);
-	}
+	// Create Shaders
 	
-	
-	//create Shaders
+	/**
+	 * Creates and compiles an OpenGL shader of the specified type.
+	 *
+	 * @param source the GLSL source code of the shader
+	 * @param TYPE the OpenGL shader type (e.g. GL_VERTEX_SHADER, GL_FRAGMENT_SHADER)
+	 * @return the compiled shader ID
+	 */
 	private static int createShader(String source, int TYPE) {
 		int shader = glCreateShader(TYPE);
         glShaderSource(shader, source);
@@ -55,6 +67,14 @@ public class ShaderProgram {
         checkShader(shader);
         return shader;
 	}	
+	
+	/**
+	 * Checks whether a shader compiled successfully.
+	 *
+	 * If compilation failed, prints the shader info log and throws a runtime exception.
+	 *
+	 * @param shader the shader ID to validate
+	 */
 
 	private static void checkShader(int shader) {
         if (glGetShaderi(shader, GL_COMPILE_STATUS) == GL_FALSE) {
@@ -62,14 +82,31 @@ public class ShaderProgram {
             throw new RuntimeException("Shader compile error");
         }
     }
-
+	
+	/**
+	 * Checks whether a shader program linked successfully.
+	 *
+	 * If linking failed, prints the program info log and throws a runtime exception.
+	 *
+	 * @param program the shader program ID to validate
+	 */
     private static void checkProgram(int program) {
         if (glGetProgrami(program, GL_LINK_STATUS) == GL_FALSE) {
             System.err.println(glGetProgramInfoLog(program));
             throw new RuntimeException("Program link error");
         }
     }
-	
+	  
+    /**
+     * Creates and links an OpenGL shader program from compiled vertex and fragment shaders.
+     *
+     * The provided shader IDs are attached to a new program, which is then linked
+     * and validated. The resulting program can be used for rendering.
+     *
+     * @param vertexShader the compiled vertex shader ID
+     * @param fragmentShader the compiled fragment shader ID
+     * @return the linked shader program ID
+     */
 	private static int createShaderProgram(int vertexShader, int fragmentShader) {
 		int shaderProgram = glCreateProgram();
         glAttachShader(shaderProgram, vertexShader);
@@ -79,34 +116,40 @@ public class ShaderProgram {
         checkProgram(shaderProgram);
         return shaderProgram;
 	}	
-
+	
+	/**
+	 * Creates an OpenGL shader program from vertex and fragment shader source files.
+	 *
+	 * @param vertexFile path to the vertex shader source file
+	 * @param fragmentFile path to the fragment shader source file
+	 * @return the linked shader program ID ready for use
+	 */
 	private static int createShaderProgram(String vertexFile, String fragmentFile) {
 		//Read Shaders
 		String vertexSource = Utils.readFromFile(vertexFile);
 		String fragmentSource = Utils.readFromFile(fragmentFile);
 		
-		//Create Vertex Shader
+		//Create Vertex & Fragment Shader
 		int vertexShader = createShader(vertexSource, GL_VERTEX_SHADER);
         int fragmentShader = createShader(fragmentSource, GL_FRAGMENT_SHADER);
       
-        //Create Program
+        //Create Shader Program
 		int shaderProgram = createShaderProgram(vertexShader, fragmentShader);
-        
-		//TODO: uniforms
-		
-		//Delete Unnecessary Shaders
+        		
+		// Clean
         glDeleteShader(vertexShader);
         glDeleteShader(fragmentShader);
         
         return shaderProgram;
 
 	}
-
+	
+	// Getters
 	public int getProgramID() {
 		return this.programID;
 	}
 	
-	//Uniform stuff
+	// Uniform Editors for Different Types
 
 	public void editUniform(String name, Matrix4f val) {
 		glUseProgram(programID);
@@ -160,7 +203,6 @@ public class ShaderProgram {
 		glUseProgram(0);
 	}
 	
-	
 	public void editUniform(String name, Color val) {
 		glUseProgram(programID);
 		
@@ -201,5 +243,11 @@ public class ShaderProgram {
 		
 		glUseProgram(0);
 	}
+	
+	//clean
+	public void clean() {
+		glDeleteProgram(programID);
+	}
+	
 }
 

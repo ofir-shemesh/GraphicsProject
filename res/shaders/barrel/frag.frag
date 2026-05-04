@@ -9,14 +9,13 @@ in vec3 bitangent;
 
 out vec4 fragColor;
 
+uniform vec3 lightDir;
 uniform sampler2D texSam0;
 uniform sampler2D texSam1;
 
 
 void main() {
-    vec3 lightDir = vec3(0.0, 1.0, 1.0);
-    lightDir = normalize(lightDir);
-
+    vec3 lightDirection = lightDir;
     vec4 baseColor = texture(texSam0, uv);
     vec3 relativeNormalCoords = texture(texSam1, uv).rgb * 2.0 - 1.0;
 
@@ -26,6 +25,6 @@ void main() {
     
     effectiveNormal = normalize(effectiveNormal);
     
-    float val = clamp(abs(dot(effectiveNormal, normalize(lightDir))), 0.0, 1.0);
+    float val = clamp(abs(dot(effectiveNormal, normalize(lightDirection))), 0.0, 1.0);
     fragColor = vec4(val*baseColor.rgb, 1.0);
 }
