@@ -56,7 +56,7 @@ public class VariableText {
 				trimmed_text, font, maxLength-trimmed_text.length()));
 	}
 	
-	public void renderGUI() {
+	public void render() {
 		renderable.render(true);
 	}
 	

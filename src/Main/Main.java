@@ -5,6 +5,7 @@ import color.ColorGradient;
 import color.GradientElement;
 import input.Keyboard;
 import input.Mouse;
+import inventory.Inventory;
 import player.Player;
 import render.components.ShaderProgram;
 import render.components.Texture;
@@ -21,6 +22,12 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_S;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
+
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_K;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_L;
+
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN;
 
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -295,13 +302,26 @@ public class Main {
 		
 		setCameraUniforms.run();
 		camera.addPositionChangeListener(setCameraUniforms);
-		}
+	}
+	
+	//Init Inventory Keyboard
+	
+	private static void initInventoryKeyboard() {
+		Keyboard.onKeyPress(GLFW_KEY_UP, () -> {
+			Inventory.addCoins(1);
+		});
+		Keyboard.onKeyPress(GLFW_KEY_DOWN, () -> {
+			Inventory.addCoins(-1);
+		});
+	}
+	
+	//Game Stuff
 	
 	private static void init() {
 		Window.init();
 		Keyboard.init();
 		Mouse.init();
-		
+		Inventory.init();
 		
 		initCamera();
 		
@@ -317,7 +337,9 @@ public class Main {
 		initBarrelRenderable();
 		initWall();
 		initCoin();
-
+		
+		initInventoryKeyboard();
+		
 		initLight();
 		initText();
 	}
@@ -343,7 +365,8 @@ public class Main {
 			coin.render();
 			
 			text.updateText(Time.getTimeText());
-			text.renderGUI();
+			text.render();
+			Inventory.render();
 			
 			Keyboard.tick();
 			
@@ -353,6 +376,7 @@ public class Main {
 	
 	private static void clean() {
 		Window.clean();
+		Inventory.clean();
 		
 		player_rend.clean();
 		sky_rend.clean();
