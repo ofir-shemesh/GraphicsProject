@@ -298,6 +298,7 @@ public class Main {
 			
 			barrel_rend.render();
 			
+			text.updateText(Time.getTimeText());
 			text.renderGUI();
 			
 			Keyboard.tick();
