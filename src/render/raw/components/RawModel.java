@@ -31,7 +31,7 @@ public class RawModel {
 	}
 
 	public RawModel(int[] indices, List<RawFloatBuffer> float_buffers, List<RawIntBuffer> int_buffers) {
-		this.indices = indices;
+		this.indices = indices.clone();
 		this.float_buffers = float_buffers;
 		this.int_buffers = int_buffers;
 		

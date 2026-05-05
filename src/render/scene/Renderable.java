@@ -86,6 +86,13 @@ public class Renderable {
 		return shaderPrograms.get(currentShaderProgram);
 	}
 	
+	/**
+	 * 
+	 * @param data
+	 */
+	public void updateFloatBufferData(RawModel data) {
+		models.get(currentModel).updateFloatBufferData(data);
+	}
 	
 	/**
 	 * Renders the object using default settings (non-GUI mode).

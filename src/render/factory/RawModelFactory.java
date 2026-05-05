@@ -14,8 +14,17 @@ import org.lwjgl.assimp.Assimp;
 
 import render.raw.buffers.RawFloatBuffer;
 import render.raw.components.RawModel;
+import text.Font;
+import text.LetterData;
 
 public class RawModelFactory {
+	
+	//TODO: make code duplication in the quads better
+	
+	private static final int[] indicesQuad = new int[] {
+			0,1,2,
+			1,2,3
+	};
 	
 	private static float[] createVerticesArray(AIMesh mesh) {
 	
@@ -163,6 +172,7 @@ public class RawModelFactory {
 	
 	//The Actual Loaders:
 	
+	// --- OBJ ---
 	public static RawModel OBJModel(String file) {
 		return OBJModel(file, false, false);
 	}
@@ -229,6 +239,8 @@ public class RawModelFactory {
 		return new RawModel(indices, float_buffers, new ArrayList<>());
 	}
 	
+	// --- Quads ---
+	
 	public static RawModel quad2D(Vector2f center, Vector2f size) {
 		float x = center.x;
 		float y = center.y;
@@ -242,17 +254,13 @@ public class RawModelFactory {
 				x+hw,y+hh
 		};
 		
-		int[] indices = new int[] {
-				0,1,2,
-				1,2,3
-		};
 		
 		List<RawFloatBuffer> buffers = new ArrayList<>();
 		
         RawFloatBuffer vertexBuffer = new RawFloatBuffer(vertices, 2);
 		buffers.add(vertexBuffer);
 		
-		return new RawModel(indices, buffers, new ArrayList<>());
+		return new RawModel(indicesQuad, buffers, new ArrayList<>());
 	}
 	
 	public static RawModel quad2D(Vector2f center, Vector2f size, float[] uv) {
@@ -268,11 +276,6 @@ public class RawModelFactory {
 				x+hw,y+hh
 		};
 		
-		int[] indices = new int[] {
-				0,1,2,
-				1,2,3
-		};
-		
 		List<RawFloatBuffer> buffers = new ArrayList<>();
 		
         RawFloatBuffer vertexBuffer = new RawFloatBuffer(vertices, 2);
@@ -281,7 +284,7 @@ public class RawModelFactory {
         RawFloatBuffer uvBuffer = new RawFloatBuffer(uv, 2);
 		buffers.add(uvBuffer);
 		
-		return new RawModel(indices, buffers, new ArrayList<>());
+		return new RawModel(indicesQuad, buffers, new ArrayList<>());
 	}
 	
 	public static RawModel screenQuad() {
@@ -309,12 +312,6 @@ public class RawModelFactory {
 				0.0f, 1.0f, 0.0f
 		};
 		
-		
-		int[] indices = new int[] {
-				0,1,2,
-				1,2,3
-		};
-		
 		List<RawFloatBuffer> buffers = new ArrayList<>();
 		
         RawFloatBuffer vertexBuffer = new RawFloatBuffer(vertices, 3);
@@ -323,7 +320,87 @@ public class RawModelFactory {
 		RawFloatBuffer normalsBuffer = new RawFloatBuffer(normals, 3);
 		buffers.add(normalsBuffer);
 		
-		return new RawModel(indices, buffers, new ArrayList<>());
+		return new RawModel(indicesQuad, buffers, new ArrayList<>());
 	}
 	
+	// --- Text ---
+	
+	/**
+	 * @param position - TODO: what is position
+	 * @param lineHeight
+	 * @param letter
+	 * @param font
+	 * @return a RawModel for a text character
+	 */
+	public static RawModel createLetterRawModel(Vector2f position, float lineHeight, char letter, Font font) {
+		LetterData letterData = font.getLetterData(letter);
+		
+		float outputWidth = letterData.getWidth() / font.getLineHeight() * lineHeight;
+		float outputHeight = letterData.getHeight() / font.getLineHeight() * lineHeight;
+		
+		Vector2f outputSize = new Vector2f(outputWidth, outputHeight);
+		
+		float outputX = position.x + outputWidth/2 + letterData.getXOffset() / font.getLineHeight() * lineHeight;
+		float outputY = position.y + outputHeight*3/2 + letterData.getYOffset() / font.getLineHeight() * lineHeight;
+		
+		Vector2f outputPosition = new Vector2f(outputX, outputY);
+		
+		float[] uv = font.getUV(letter);
+		
+		return quad2D(outputPosition, outputSize, uv);
+	}
+	
+	/**
+	 * @param position - cursor's position at start of text
+	 * @param lineHeight
+	 * @param text
+	 * @param font
+	 * @return a raw model for the text
+	 */
+	public static RawModel createLineRawModel(Vector2f position, float lineHeight, String text, Font font, int voids) {
+		int length = text.length() + voids;
+		
+		float[] vertices = new float[8 * length];
+		float[] uv = new float[8 * length];
+		int[] indices = new int[6 * length];
+		
+		Vector2f cursorPosition = new Vector2f(position);
+		
+		// --- initialize vertices and uv ---
+		for (int i = 0; i < length; i++) {
+			// --- text quads ---
+			if (i < text.length()) {
+				char c = text.charAt(i);
+				
+				RawModel charModelData = createLetterRawModel(cursorPosition, lineHeight, c, font);
+				LetterData charData = font.getLetterData(c);
+
+				// --- add the character's  vertices and uv to the line's vertices and uv --- 
+				for (int j=0; j < 8; j++) {
+					vertices[i*8+j] = charModelData.float_buffers.get(0).getArr()[j];
+					uv[i*8+j] = charModelData.float_buffers.get(1).getArr()[j];
+				}
+				
+				// --- move cursor ---
+				cursorPosition.add(new Vector2f(charData.getXAdvance() / font.getLineHeight() * lineHeight, 0.0f));		
+			}
+				for (int j=0; j < 6; j++) {
+					indices[i*6+j] = indicesQuad[j] + 4*i;
+				}
+				
+				//for voids vertices, uv's are set to 0 because there's no need for them until a text is inserted there
+		}
+		
+		
+		// --- create the model ---
+		List<RawFloatBuffer> buffers = new ArrayList<>();
+		
+		RawFloatBuffer vertexBuffer = new RawFloatBuffer(vertices, 2);
+		buffers.add(vertexBuffer);
+		
+		RawFloatBuffer textureBuffer = new RawFloatBuffer(uv, 2);
+		buffers.add(textureBuffer);
+
+		return new RawModel(indices, buffers);
+	}
 }

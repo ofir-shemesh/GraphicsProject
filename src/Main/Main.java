@@ -14,6 +14,8 @@ import render.scene.Renderable;
 import sky.Light;
 import sky.Sky;
 import sky.Time;
+import text.TextStyle;
+import text.VariableText;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
@@ -39,6 +41,8 @@ public class Main {
 	private static Renderable floor_rend;
 	
 	private static Renderable barrel_rend;
+	
+	private static VariableText text;
 	
 	// Player & Camera
 	
@@ -246,6 +250,15 @@ public class Main {
 		editLightShaders.run();
 	}
 	
+	
+	// Text
+	private static void initText() {
+		TextStyle style = new TextStyle(0.6f, 0.2f, new Color(1.0f, 1.0f, 1.0f, 1.0f), new Color(0.0f, 0.0f, 0.0f, 1.0f));
+		String fontName = "font";
+		text = new VariableText(100, 0.1f, new Vector2f(-0.9f, 0.6f), fontName, style, "67 : 76");
+
+	}
+	
 	private static void init() {
 		Window.init();
 		Keyboard.init();
@@ -265,6 +278,8 @@ public class Main {
 		
 		initBarrelRenderable();
 		initLight();
+		
+		initText();
 	}
 	
 	private static void loop() {
@@ -283,6 +298,8 @@ public class Main {
 			
 			barrel_rend.render();
 			
+			text.renderGUI();
+			
 			Keyboard.tick();
 			
 			Window.loop_after();			
@@ -296,6 +313,7 @@ public class Main {
 		sky_rend.clean();
 		floor_rend.clean();
 		barrel_rend.clean();
+		text.clean();
 	}
 	
 	public static void main(String [] args) {
