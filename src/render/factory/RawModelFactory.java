@@ -323,8 +323,145 @@ public class RawModelFactory {
 		return new RawModel(indicesQuad, buffers, new ArrayList<>());
 	}
 	
-	// --- Text ---
 	
+	// --- Box ---
+	public static RawModel boxUV(Vector3f center, Vector3f size) {
+		float x = center.x;
+	    float y = center.y;
+	    float z = center.z;
+
+	    float hw = size.x / 2.0f;
+	    float hh = size.y / 2.0f;
+	    float hd = size.z / 2.0f;
+		
+		float[] vertices = new float[] {
+				// FRONT
+		        x-hw, y-hh, z+hd,
+		        x+hw, y-hh, z+hd,
+		        x-hw, y+hh, z+hd,
+		        x+hw, y+hh, z+hd,
+
+		        // BACK
+		        x+hw, y-hh, z-hd,
+		        x-hw, y-hh, z-hd,
+		        x+hw, y+hh, z-hd,
+		        x-hw, y+hh, z-hd,
+
+		        // LEFT
+		        x-hw, y-hh, z-hd,
+		        x-hw, y-hh, z+hd,
+		        x-hw, y+hh, z-hd,
+		        x-hw, y+hh, z+hd,
+
+		        // RIGHT
+		        x+hw, y-hh, z+hd,
+		        x+hw, y-hh, z-hd,
+		        x+hw, y+hh, z+hd,
+		        x+hw, y+hh, z-hd,
+
+		        // TOP
+		        x-hw, y+hh, z+hd,
+		        x+hw, y+hh, z+hd,
+		        x-hw, y+hh, z-hd,
+		        x+hw, y+hh, z-hd,
+
+		        // BOTTOM
+		        x-hw, y-hh, z-hd,
+		        x+hw, y-hh, z-hd,
+		        x-hw, y-hh, z+hd,
+		        x+hw, y-hh, z+hd
+		};
+		
+		float[] normals = new float[] {
+				// FRONT
+		        0,0,1, 0,0,1, 0,0,1, 0,0,1,
+
+		        // BACK
+		        0,0,-1, 0,0,-1, 0,0,-1, 0,0,-1,
+
+		        // LEFT
+		        -1,0,0, -1,0,0, -1,0,0, -1,0,0,
+
+		        // RIGHT
+		        1,0,0, 1,0,0, 1,0,0, 1,0,0,
+
+		        // TOP
+		        0,1,0, 0,1,0, 0,1,0, 0,1,0,
+
+		        // BOTTOM
+		        0,-1,0, 0,-1,0, 0,-1,0, 0,-1,0
+		};
+		
+		float[] uvs = new float[] {
+				// FRONT
+		        0,0, 1,0, 0,1, 1,1,
+
+		        // BACK
+		        0,0, 1,0, 0,1, 1,1,
+
+		        // LEFT
+		        0,0, 1,0, 0,1, 1,1,
+
+		        // RIGHT
+		        0,0, 1,0, 0,1, 1,1,
+
+		        // TOP
+		        0,0, 1,0, 0,1, 1,1,
+
+		        // BOTTOM
+		        0,0, 1,0, 0,1, 1,1
+		};
+		
+		float[] tangents = new float[] {
+
+			    // FRONT
+			    1,0,0, 1,0,0, 1,0,0, 1,0,0,
+
+			    // BACK
+			    -1,0,0, -1,0,0, -1,0,0, -1,0,0,
+
+			    // LEFT
+			    0,0,-1, 0,0,-1, 0,0,-1, 0,0,-1,
+
+			    // RIGHT
+			    0,0,1, 0,0,1, 0,0,1, 0,0,1,
+
+			    // TOP
+			    1,0,0, 1,0,0, 1,0,0, 1,0,0,
+
+			    // BOTTOM
+			    1,0,0, 1,0,0, 1,0,0, 1,0,0
+			};
+		
+		int[] indices = new int[] {
+		        0,1,2, 2,1,3,        // front
+		        4,5,6, 6,5,7,        // back
+		        8,9,10, 10,9,11,     // left
+		        12,13,14, 14,13,15,  // right
+		        16,17,18, 18,17,19,  // top
+		        20,21,22, 22,21,23   // bottom
+		    };
+		
+		
+		List<RawFloatBuffer> buffers = new ArrayList<>();
+		
+        RawFloatBuffer vertexBuffer = new RawFloatBuffer(vertices, 3);
+		buffers.add(vertexBuffer);
+		
+		RawFloatBuffer normalsBuffer = new RawFloatBuffer(normals, 3);
+		buffers.add(normalsBuffer);
+		
+		RawFloatBuffer tangentsBuffer = new RawFloatBuffer(tangents, 3);
+		buffers.add(tangentsBuffer);
+		
+		
+		RawFloatBuffer uvsBuffer = new RawFloatBuffer(uvs, 2);
+		buffers.add(uvsBuffer);
+		
+		return new RawModel(indices, buffers, new ArrayList<>());
+	}
+	// --- Text ---
+ 	
 	/**
 	 * @param position - TODO: what is position
 	 * @param lineHeight

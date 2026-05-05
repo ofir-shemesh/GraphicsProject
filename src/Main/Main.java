@@ -44,6 +44,8 @@ public class Main {
 	
 	private static VariableText text;
 	
+	private static Renderable wall_rend;
+	
 	// Player & Camera
 	
 	private static void initRenderable() {
@@ -229,7 +231,26 @@ public class Main {
 		camera.addPositionChangeListener(setCameraUniforms);
 		
 	}
-	
+	//Wall
+		private static void initWall() {
+			float size = 1.0f;
+			RawModel model = RawModelFactory.boxUV(new Vector3f().zero(), new Vector3f(size, size, size));
+			ShaderProgram program = new ShaderProgram("res/shaders/wall/vert.vert", "res/shaders/wall/frag.frag");
+			Texture texture = new Texture("res/textures/wall/wall.jpg", false);
+			Texture normalTexture = new Texture("res/textures/wall/wallNormal.jpg", false);
+			Texture[] textures = {texture, normalTexture};
+
+			wall_rend = new Renderable(model, program, textures);
+			
+			Runnable setCameraUniforms = () -> {
+				wall_rend.getShaderProgram().editUniform("camTrans", camera.getModelViewProjectionMatrix());
+			};
+			
+			setCameraUniforms.run();
+			camera.addPositionChangeListener(setCameraUniforms);
+			
+		}
+		
 	//Light
 	
 	private static void initLight() {
@@ -244,6 +265,7 @@ public class Main {
 			Vector3f direction = Light.getDirection();
 			player_rend.getShaderProgram().editUniform("lightDir", direction);
 			barrel_rend.getShaderProgram().editUniform("lightDir", direction);
+			wall_rend.getShaderProgram().editUniform("lightDir", direction);
 		};
 		
 		Light.addPostRotEdit(editLightShaders);
@@ -258,6 +280,7 @@ public class Main {
 		text = new VariableText(100, 0.1f, new Vector2f(-0.9f, 0.6f), fontName, style, "67 : 76");
 
 	}
+	
 	
 	private static void init() {
 		Window.init();
@@ -277,6 +300,7 @@ public class Main {
 		initMovement();
 		
 		initBarrelRenderable();
+		initWall();
 		initLight();
 		
 		initText();
@@ -296,7 +320,8 @@ public class Main {
 			player_rend.render();
 			player.tick();
 			
-			barrel_rend.render();
+			//barrel_rend.render();
+			wall_rend.render();
 			
 			text.updateText(Time.getTimeText());
 			text.renderGUI();
@@ -314,6 +339,7 @@ public class Main {
 		sky_rend.clean();
 		floor_rend.clean();
 		barrel_rend.clean();
+		wall_rend.clean();
 		text.clean();
 	}
 	
