@@ -26,6 +26,7 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import camera.Camera;
+import coin.Coin;
 import utils.MyMath;
 
 public class Main {
@@ -45,7 +46,8 @@ public class Main {
 	private static VariableText text;
 	
 	private static Renderable wall_rend;
-	
+
+	private static Coin coin;
 	// Player & Camera
 	
 	private static void initRenderable() {
@@ -232,24 +234,24 @@ public class Main {
 		
 	}
 	//Wall
-		private static void initWall() {
-			float size = 1.0f;
-			RawModel model = RawModelFactory.boxUV(new Vector3f().zero(), new Vector3f(size, size, size));
-			ShaderProgram program = new ShaderProgram("res/shaders/wall/vert.vert", "res/shaders/wall/frag.frag");
-			Texture texture = new Texture("res/textures/wall/wall.jpg", false);
-			Texture normalTexture = new Texture("res/textures/wall/wallNormal.jpg", false);
-			Texture[] textures = {texture, normalTexture};
+	private static void initWall() {
+		float size = 1.0f;
+		RawModel model = RawModelFactory.boxUV(new Vector3f().zero(), new Vector3f(size, size, size));
+		ShaderProgram program = new ShaderProgram("res/shaders/wall/vert.vert", "res/shaders/wall/frag.frag");
+		Texture texture = new Texture("res/textures/wall/wall.jpg", false);
+		Texture normalTexture = new Texture("res/textures/wall/wallNormal.jpg", false);
+		Texture[] textures = {texture, normalTexture};
 
-			wall_rend = new Renderable(model, program, textures);
-			
-			Runnable setCameraUniforms = () -> {
-				wall_rend.getShaderProgram().editUniform("camTrans", camera.getModelViewProjectionMatrix());
-			};
-			
-			setCameraUniforms.run();
-			camera.addPositionChangeListener(setCameraUniforms);
-			
-		}
+		wall_rend = new Renderable(model, program, textures);
+		
+		Runnable setCameraUniforms = () -> {
+			wall_rend.getShaderProgram().editUniform("camTrans", camera.getModelViewProjectionMatrix());
+		};
+		
+		setCameraUniforms.run();
+		camera.addPositionChangeListener(setCameraUniforms);
+		
+	}
 		
 	//Light
 	
@@ -266,6 +268,7 @@ public class Main {
 			player_rend.getShaderProgram().editUniform("lightDir", direction);
 			barrel_rend.getShaderProgram().editUniform("lightDir", direction);
 			wall_rend.getShaderProgram().editUniform("lightDir", direction);
+			coin.getRenderable().getShaderProgram().editUniform("lightDir", direction);
 		};
 		
 		Light.addPostRotEdit(editLightShaders);
@@ -281,6 +284,18 @@ public class Main {
 
 	}
 	
+	//Coin
+	
+	private static void initCoin() {
+		coin = new Coin(new Vector3f(2.0f, 0.0f, 0.0f));
+
+		Runnable setCameraUniforms = () -> {
+			coin.getRenderable().getShaderProgram().editUniform("camTrans", camera.getModelViewProjectionMatrix());
+		};
+		
+		setCameraUniforms.run();
+		camera.addPositionChangeListener(setCameraUniforms);
+		}
 	
 	private static void init() {
 		Window.init();
@@ -301,8 +316,9 @@ public class Main {
 		
 		initBarrelRenderable();
 		initWall();
+		initCoin();
+
 		initLight();
-		
 		initText();
 	}
 	
@@ -321,7 +337,10 @@ public class Main {
 			player.tick();
 			
 			//barrel_rend.render();
-			wall_rend.render();
+			//wall_rend.render();
+			
+			coin.tick();
+			coin.render();
 			
 			text.updateText(Time.getTimeText());
 			text.renderGUI();
@@ -341,6 +360,7 @@ public class Main {
 		barrel_rend.clean();
 		wall_rend.clean();
 		text.clean();
+		coin.clean();
 	}
 	
 	public static void main(String [] args) {
