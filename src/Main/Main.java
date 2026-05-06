@@ -3,6 +3,7 @@ package main;
 import color.Color;
 import color.ColorGradient;
 import color.GradientElement;
+import gui.GUI;
 import input.Keyboard;
 import input.Mouse;
 import inventory.Inventory;
@@ -15,25 +16,19 @@ import render.scene.Renderable;
 import sky.Light;
 import sky.Sky;
 import sky.Time;
-import text.TextStyle;
-import text.VariableText;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_A;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_S;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
 
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_K;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_L;
-
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN;
 
-import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 import camera.Camera;
-import coin.Coin;
+import world.World;
 import utils.MyMath;
 
 public class Main {
@@ -46,15 +41,6 @@ public class Main {
 	private static Renderable sky_rend;
 	private static Sky sky;
 	
-	private static Renderable floor_rend;
-	
-	private static Renderable barrel_rend;
-	
-	private static VariableText text;
-	
-	private static Renderable wall_rend;
-
-	private static Coin coin;
 	// Player & Camera
 	
 	private static void initRenderable() {
@@ -64,21 +50,10 @@ public class Main {
 		player_rend = new Renderable(model, program, new Texture[] {});
 	}
 	
-	private static void run() {
-		init();
-		loop();
-		clean();
-	}
-	
 	private static void initCamera() {
 		camera = new Camera(new Vector3f().zero(),
 				0.0f, 0.0f, 0.0f,
 				0.1f, 10.0f, MyMath.pi/6, 1.0f);
-		
-		Mouse.addMovementRunnable((prevx, prevy, currx, curry) -> {
-			camera.increasePitch((currx-prevx)*0.005f);
-			camera.increaseYaw((curry-prevy)*0.005f);
-		});
 	}
 	
 	private static void initMovement() {
@@ -118,6 +93,9 @@ public class Main {
 		};
 		
 		Mouse.addMovementRunnable((prevx, prevy, currx, curry) -> {
+			camera.increasePitch((currx-prevx)*0.005f);
+			camera.increaseYaw((curry-prevy)*0.005f);
+
 			setCameraPosition.run();
 		});
 		
@@ -203,63 +181,7 @@ public class Main {
 		Time.addPostTick(updateSkyUniforms);
 	}
 	
-	//Floor
 	
-	private static void initFloorRenderable() {
-		RawModel model = RawModelFactory.quadFloor(new Vector3f(0.0f, -0.5f, 0.0f), new Vector2f(20.0f, 20.0f));
-		ShaderProgram program = new ShaderProgram("res/shaders/floor/vert.vert", "res/shaders/floor/frag.frag");
-		
-		floor_rend = new Renderable(model, program, new Texture[] {});
-		
-		Runnable setCameraUniforms = () -> {
-			floor_rend.getShaderProgram().editUniform("camTrans", camera.getModelViewProjectionMatrix());
-			floor_rend.getShaderProgram().editUniform("camTranslationTrans", camera.getTranslationTransformation());
-		};
-		
-		setCameraUniforms.run();
-		camera.addPositionChangeListener(setCameraUniforms);
-		
-	}	
-	
-	//Barrel
-	
-	private static void initBarrelRenderable() {
-		RawModel model = RawModelFactory.OBJModel("res/models/barrel.obj", true, true);
-		ShaderProgram program = new ShaderProgram("res/shaders/barrel/vert.vert", "res/shaders/barrel/frag.frag");
-		Texture texture = new Texture("res/textures/barrel/barrel.png", false);
-		Texture normalTexture = new Texture("res/textures/barrel/barrelNormal.png", false);
-		Texture[] textures = {texture, normalTexture};
-
-		barrel_rend = new Renderable(model, program, textures);
-		
-		Runnable setCameraUniforms = () -> {
-			barrel_rend.getShaderProgram().editUniform("camTrans", camera.getModelViewProjectionMatrix());
-		};
-		
-		setCameraUniforms.run();
-		camera.addPositionChangeListener(setCameraUniforms);
-		
-	}
-	//Wall
-	private static void initWall() {
-		float size = 1.0f;
-		RawModel model = RawModelFactory.boxUV(new Vector3f().zero(), new Vector3f(size, size, size));
-		ShaderProgram program = new ShaderProgram("res/shaders/wall/vert.vert", "res/shaders/wall/frag.frag");
-		Texture texture = new Texture("res/textures/wall/wall.jpg", false);
-		Texture normalTexture = new Texture("res/textures/wall/wallNormal.jpg", false);
-		Texture[] textures = {texture, normalTexture};
-
-		wall_rend = new Renderable(model, program, textures);
-		
-		Runnable setCameraUniforms = () -> {
-			wall_rend.getShaderProgram().editUniform("camTrans", camera.getModelViewProjectionMatrix());
-		};
-		
-		setCameraUniforms.run();
-		camera.addPositionChangeListener(setCameraUniforms);
-		
-	}
-		
 	//Light
 	
 	private static void initLight() {
@@ -273,35 +195,10 @@ public class Main {
 		Runnable editLightShaders = () -> {
 			Vector3f direction = Light.getDirection();
 			player_rend.getShaderProgram().editUniform("lightDir", direction);
-			barrel_rend.getShaderProgram().editUniform("lightDir", direction);
-			wall_rend.getShaderProgram().editUniform("lightDir", direction);
-			coin.getRenderable().getShaderProgram().editUniform("lightDir", direction);
 		};
 		
 		Light.addPostRotEdit(editLightShaders);
 		editLightShaders.run();
-	}
-	
-	
-	// Text
-	private static void initText() {
-		TextStyle style = new TextStyle(0.6f, 0.2f, new Color(1.0f, 1.0f, 1.0f, 1.0f), new Color(0.0f, 0.0f, 0.0f, 1.0f));
-		String fontName = "font";
-		text = new VariableText(100, 0.1f, new Vector2f(-0.9f, 0.6f), fontName, style, "67 : 76");
-
-	}
-	
-	//Coin
-	
-	private static void initCoin() {
-		coin = new Coin(new Vector3f(2.0f, 0.0f, 0.0f));
-
-		Runnable setCameraUniforms = () -> {
-			coin.getRenderable().getShaderProgram().editUniform("camTrans", camera.getModelViewProjectionMatrix());
-		};
-		
-		setCameraUniforms.run();
-		camera.addPositionChangeListener(setCameraUniforms);
 	}
 	
 	//Init Inventory Keyboard
@@ -314,6 +211,12 @@ public class Main {
 			Inventory.addCoins(-1);
 		});
 	}
+	//World
+	private static void initCollectingCoins() {
+		player.addPostPosEdit(() -> {
+			World.checkForCoin(player.getPosition());
+		});
+	}
 	
 	//Game Stuff
 	
@@ -321,7 +224,6 @@ public class Main {
 		Window.init();
 		Keyboard.init();
 		Mouse.init();
-		Inventory.init();
 		
 		initCamera();
 		
@@ -329,46 +231,34 @@ public class Main {
 		initSky();
 		initStars();
 		
-		initFloorRenderable();
-		
 		initRenderable();
 		initMovement();
-		
-		initBarrelRenderable();
-		initWall();
-		initCoin();
 		
 		initInventoryKeyboard();
 		
 		initLight();
-		initText();
+		World.init(camera);
+		initCollectingCoins();
+		GUI.init();
 	}
 	
 	private static void loop() {
 		while (!Window.shouldClose()) { 
 			Window.loop_before();
 			
-
+			Keyboard.tick();
+			
 			Time.tick();
 			Light.tick();
 			
-			sky_rend.render(true);			
-			floor_rend.render();
-			
-			player_rend.render();
+			World.tick();
 			player.tick();
+			GUI.tick();
 			
-			//barrel_rend.render();
-			//wall_rend.render();
-			
-			coin.tick();
-			coin.render();
-			
-			text.updateText(Time.getTimeText());
-			text.render();
-			Inventory.render();
-			
-			Keyboard.tick();
+			sky_rend.render(true);			
+			player_rend.render();
+			World.render();
+			GUI.render();
 			
 			Window.loop_after();			
 		}
@@ -376,15 +266,17 @@ public class Main {
 	
 	private static void clean() {
 		Window.clean();
-		Inventory.clean();
+		GUI.clean();
+		World.clean();
 		
 		player_rend.clean();
 		sky_rend.clean();
-		floor_rend.clean();
-		barrel_rend.clean();
-		wall_rend.clean();
-		text.clean();
-		coin.clean();
+	}
+	
+	private static void run() {
+		init();
+		loop();
+		clean();
 	}
 	
 	public static void main(String [] args) {

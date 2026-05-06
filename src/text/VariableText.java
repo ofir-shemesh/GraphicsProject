@@ -1,7 +1,5 @@
 package text;
 
-import java.util.Arrays;
-
 import org.joml.Vector2f;
 
 import render.components.ShaderProgram;

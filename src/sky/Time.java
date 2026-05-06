@@ -20,18 +20,6 @@ public class Time {
 		onTickListeners.add(listener);
 	}
 	
-	/**
-	 * @return textual representation of the time as hh:mm
-	 */
-	public static String getTimeText() {
-	    float hours_f = time * 24;
-	    int hours = (int) Math.floor(hours_f);
-	    int minutes = (int) Math.floor(60 * (hours_f - hours));
-
-	    // Format with leading zeros
-	    return String.format("%02d:%02d", hours, minutes);
-	}
-	
 	public static float getTime() {
 		return time;
 	}

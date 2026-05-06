@@ -1,4 +1,4 @@
-package coin;
+package world;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -10,7 +10,7 @@ import render.raw.components.RawModel;
 import render.scene.Renderable;
 import utils.MyMath;
 
-public class Coin {
+public class CoinEntity implements WorldEntity {
 	private static final float rotation_speed = 0.01f;
 	private static final float harmonic_speed = 0.01f;
 	
@@ -25,7 +25,7 @@ public class Coin {
 	
 	private Renderable renderable;
 	
-	public Coin(Vector3f base_position) {
+	public CoinEntity(Vector3f base_position) {
 		this.base_position = new Vector3f(base_position);
 		
 		RawModel model = RawModelFactory.OBJModel("res/models/coin.obj");

@@ -3,10 +3,11 @@
 in vec2 posOnFloor;
 
 out vec4 fragColor;
+uniform float cellSize;
 
 void main() {
-    int x = int(floor(posOnFloor.x));
-    int y = int(floor(posOnFloor.y));
+    int x = int(floor(posOnFloor.x / cellSize));
+    int y = int(floor(posOnFloor.y / cellSize));
     
     vec3 color_rgb = vec3(0.7, 0.3, 0.0);
     

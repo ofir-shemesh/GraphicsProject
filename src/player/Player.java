@@ -3,6 +3,8 @@ package player;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
+import world.World;
+
 public class Player {
 	private Vector3f position;
 	public Matrix4f base_rotation;
@@ -23,7 +25,9 @@ public class Player {
 		setAngle(angle);
 		
 		Vector3f dp = new Vector3f(0.0f, 0.0f, -1.0f).mul(dx).rotateY(angle);
-		this.position = new Vector3f(position).add(dp);
+		Vector3f new_position = new Vector3f(position).add(dp);
+		
+		this.position = World.requestMovement(new_position);
 		
 		onPosChange.run();
 	}
