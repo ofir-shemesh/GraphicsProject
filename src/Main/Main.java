@@ -22,9 +22,6 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_D;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_S;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_W;
 
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN;
-
 import org.joml.Vector3f;
 
 import camera.Camera;
@@ -200,17 +197,6 @@ public class Main {
 		Light.addPostRotEdit(editLightShaders);
 		editLightShaders.run();
 	}
-	
-	//Init Inventory Keyboard
-	
-	private static void initInventoryKeyboard() {
-		Keyboard.onKeyPress(GLFW_KEY_UP, () -> {
-			Inventory.addCoins(1);
-		});
-		Keyboard.onKeyPress(GLFW_KEY_DOWN, () -> {
-			Inventory.addCoins(-1);
-		});
-	}
 	//World
 	private static void initCollectingCoins() {
 		player.addPostPosEdit(() -> {
@@ -233,8 +219,6 @@ public class Main {
 		
 		initRenderable();
 		initMovement();
-		
-		initInventoryKeyboard();
 		
 		initLight();
 		World.init(camera);
